@@ -1,9 +1,11 @@
 import csv
-from math import ceil
 from typing import List, Dict, Any
 
 
 class Phonebook:
+    """
+    Класс телефонной книги
+    """
     headers = ['Фамилия', 'Имя', 'Отчество', 'Название организации', 'Телефон рабочий', 'Телефон личный']
 
     def __init__(self, filepath: str) -> None:
@@ -12,6 +14,9 @@ class Phonebook:
         self.load_contacts_from_file()
 
     def load_contacts_from_file(self) -> None:
+        """
+        Метод для записи контактов из файла в список contacts
+        """
         try:
             with open(self.filepath, encoding='utf-8') as file:
                 reader = csv.DictReader(file)
@@ -21,6 +26,9 @@ class Phonebook:
             print('Файл не найден')
 
     def save_contacts_to_file(self) -> None:
+        """
+        Метод сохранения контактов в файл csv
+        """
         with open(self.filepath, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.DictWriter(file, fieldnames=self.headers)
             writer.writeheader()
@@ -41,7 +49,7 @@ class Phonebook:
             if (field == 'Телефон рабочий' or field == 'Телефон личный') and not contact_data[field].isdigit():
                 raise ValueError(f'Поле \'{field}\' должно состоять из цифр.')
         for contact in self.contacts:
-            if contact == contact_data:
+            if all(contact[key] == contact_data[key] for key in contact_data):
                 raise ValueError(f'Контакт с такими данными уже существует.')
 
     def display_contacts(self, page_number: int, page_size: int) -> None:
@@ -57,6 +65,10 @@ class Phonebook:
             print(self.contacts[i])
 
     def add_contact(self, contact_data: Dict[str, str]) -> None:
+        """
+        Добавление нового контакта
+        :param contact_data: данные контакта для записи
+        """
         column_mapping = {
             'Фамилия': 'last_name',
             'Имя': 'first_name',
@@ -73,31 +85,42 @@ class Phonebook:
         except ValueError as e:
             print(f'\n{e}')
 
-    def edit_contact(self, contact_index: int, contact_updates: Dict[str, str]) -> None:
+    def edit_contact(self, target_contact: str, contact_updates: Dict[str, str]) -> None:
         """
         Редактирование существующего контакта.
 
-        :param contact_index: Индекс контакта в списке.
+        :param target_contact: Индекс контакта в списке.
         :param contact_updates: Новые данные контакта.
         """
-        contact = self.contacts[contact_index]
-
-        for key, value in contact_updates.items():
-            if value:  # Проверяем, что значение поля не пустое
-                contact[key] = value
-        print(contact)
-        self.contacts[contact_index] = contact
+        column_mapping = {
+            'last_name': 'Фамилия',
+            'first_name': 'Имя',
+            'middle_name': 'Отчество',
+            'organization': 'Название организации',
+            'work_phone': 'Телефон рабочий',
+            'personal_phone': 'Телефон личный'
+        }
+        for contact in self.contacts:
+            if target_contact == contact:
+                for key, value in contact_updates.items():
+                    if value:
+                        contact[column_mapping[key]] = value
+                print("Контакт успешно отредактирован.")
+                break
         self.save_contacts_to_file()
-        print("Запись успешно отредактирована.")
 
     def search_contacts(self) -> List[str]:
         """
         Поиск контактов по заданным критериям.
+        :return: Список контактов
         """
-        results = []
-        search_criteria: Dict[str, str] = self.get_search_criteria(self.headers)
+        results: List[str] = []
+        search_criteria: Dict[str, str] = {
+            key: input(f"Введите {key} для поиска: ")
+            for key in self.headers
+        }
         for contact in self.contacts:
-            is_match = True
+            is_match: bool = True
             for key, value in search_criteria.items():
                 if value and contact.get(key) != value:
                     is_match = False
@@ -106,12 +129,18 @@ class Phonebook:
                 results.append(contact)
         return results
 
-    @staticmethod
-    def get_search_criteria(headers: List[str]):
-        search_criteria = {
-            key: input(f"Введите {key} для поиска: ")
-            for key in headers
-        }
-        return search_criteria
 
-
+def get_contact_info() -> Dict[str, str]:
+    """
+    Получение данных от пользователя
+    :return: словарь с введенными данными от пользователя
+    """
+    contact: Dict[str, str] = {
+        'last_name': input("Введите фамилию: "),
+        'first_name': input("Введите имя: "),
+        'middle_name': input("Введите отчество: "),
+        'organization': input("Введите название организации: "),
+        'work_phone': input("Введите рабочий телефон: "),
+        'personal_phone': input("Введите личный телефон: ")
+    }
+    return contact
