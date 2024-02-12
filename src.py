@@ -23,7 +23,7 @@ class Phonebook:
                 for row in reader:
                     self.contacts.append(row)
         except FileNotFoundError:
-            print('Файл не найден')
+            print('Файл не найден. Будет создан новый телефонный справочник.')
 
     def save_contacts_to_file(self) -> None:
         """
@@ -50,7 +50,7 @@ class Phonebook:
                 raise ValueError(f'Поле \'{field}\' должно состоять из цифр.')
         for contact in self.contacts:
             if all(contact[key] == contact_data[key] for key in contact_data):
-                raise ValueError(f'Контакт с такими данными уже существует.')
+                raise ValueError('Контакт с такими данными уже существует.')
 
     def display_contacts(self, page_number: int, page_size: int) -> None:
         """
