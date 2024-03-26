@@ -1,4 +1,5 @@
 import csv
+from math import ceil
 from typing import List, Dict, Any
 
 
@@ -144,3 +145,51 @@ def get_contact_info() -> Dict[str, str]:
         'personal_phone': input("Введите личный телефон: ")
     }
     return contact
+
+
+def display_contacts(phonebook):
+    page_size = 5
+    print(f'Всего страниц: {ceil(len(phonebook.contacts) / page_size)}')
+    try:
+        page_number = int(input('Введите номер страницы: '))
+        phonebook.display_contacts(page_number, page_size)
+    except ValueError:
+        print('Нужно вводить число')
+
+
+def add_contact(phonebook):
+    contact = get_contact_info()
+    phonebook.add_contact(contact)
+
+
+def edit_contact(phonebook):
+    print('Оставьте поле пустым, если у вас нет информации для поиска')
+    results = phonebook.search_contacts()
+    if not results:
+        print('Запись не найдена.')
+    else:
+        print('Найденные записи:')
+        for i, result in enumerate(results):
+            print(f'{i + 1}. {result}')
+        try:
+            selection = int(input('Выберите номер записи для редактирования: '))
+            if 1 <= selection <= len(results):
+                contact = results[selection - 1]
+                contact_updates = get_contact_info()
+                phonebook.edit_contact(contact, contact_updates)
+            else:
+                print('Неверный выбор.')
+        except ValueError as e:
+            print(e)
+            print('Нужно вводить число')
+
+
+def search_contacts(phonebook):
+    print('Оставьте поле пустым, если у вас нет информации для поиска')
+    results = phonebook.search_contacts()
+    print('Результаты поиска:')
+    if results:
+        for result in results:
+            print(result)
+    else:
+        print('Ничего не найдено по заданным критериям.')
